@@ -38,4 +38,4 @@ http.createServer(function (req, res) {
         res.end(err);
       });
   });
-}).listen(8888);
+}).listen(8888, '127.0.0.1');
