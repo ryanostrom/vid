@@ -6,12 +6,23 @@ var fs = require("fs"),
 http.createServer(function (req, res) {
   var file = path.resolve(__dirname,"video.mp4");
   fs.stat(file, function(err, stats) {
-    var range = req.headers.range,
-      positions = range.replace(/bytes=/, "").split("-"),
-      start = parseInt(positions[0], 10),
-      total = stats.size,
-      end = positions[1] ? parseInt(positions[1], 10) : total - 1,
-      chunksize = (end - start) + 1;
+    if (err) {
+      if (err.code === 'ENOENT') {
+        // 404 Error if file not found
+        return res.sendStatus(404);
+      }
+    res.end(err);
+    }
+    var range = req.headers.range;
+    if (!range) {
+     // 416 Wrong range
+     return res.sendStatus(416);
+    }
+    var positions = range.replace(/bytes=/, "").split("-");
+    var start = parseInt(positions[0], 10);
+    var total = stats.size;
+    var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+    var chunksize = (end - start) + 1;
 
     res.writeHead(206, {
       "Content-Range": "bytes " + start + "-" + end + "/" + total,
